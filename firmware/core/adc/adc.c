@@ -81,7 +81,9 @@ uint8_t adcMutex = 0;
                 conversion.  (Note that only A/D channel's 0..3 are 
                 configured by default in adcInit.)
 
-    @return     0 if an overrun error occured, otherwise a 10-bit value
+    @return     ADC_ERR_OVERRUN if an overrun error occured,
+                ADC_ERR_NOT_AVAILABLE if ADC pin disabled,
+                otherwise a 10-bit value
                 containing the A/D conversion results.
     @warning    Only AD channels 0..3 are configured for A/D in adcInit.
                 If you wish to use A/D pins 4..7 they will also need to
@@ -96,10 +98,11 @@ uint32_t adcRead (uint8_t channelNum)
   uint32_t regVal, adcData;
 
   /* make sure that channel number is 0..7 */
-  if ( channelNum >= 8 )
+  /* if ( channelNum >= 8 ) */
+  if ( (channelNum >= 5) && (channelNum != 7)) // r0ket has only AD0-AD5 working
   {
-    // ToDo: Change this to throw an exception back 
-    channelNum = 0;
+    adcMutex = 0;
+    return (ADC_ERR_NOT_AVAILABLE);
   }
 
   /* Deselect all channels */
@@ -157,7 +160,7 @@ uint32_t adcRead (uint8_t channelNum)
   if ( regVal & ADC_DR_OVERRUN )
   {
     adcMutex = 0;
-    return (1);
+    return (ADC_ERR_OVERRUN);
   }
 
   /* return conversion results */
@@ -212,6 +215,40 @@ void adcInit (void)
                                IOCON_JTAG_nTRST_PIO1_2_MODE_MASK);
   IOCON_JTAG_nTRST_PIO1_2 |=  (IOCON_JTAG_nTRST_PIO1_2_FUNC_AD3 &
                                IOCON_JTAG_nTRST_PIO1_2_ADMODE_ANALOG);
+
+  /* Set AD4 to analog input */
+  IOCON_SWDIO_PIO1_3 &= ~(IOCON_SWDIO_PIO1_3_ADMODE_MASK |
+                          IOCON_SWDIO_PIO1_3_FUNC_MASK |
+                          IOCON_SWDIO_PIO1_3_MODE_MASK);
+  IOCON_SWDIO_PIO1_3 |=  (IOCON_SWDIO_PIO1_3_FUNC_AD4 &
+                          IOCON_SWDIO_PIO1_3_ADMODE_ANALOG);
+
+  /* Set AD5 to analog input */
+  /* disabled for r0ket, pulled up on board for deep power down
+  IOCON_PIO1_4 &= ~(IOCON_PIO1_4_ADMODE_MASK |
+                    IOCON_PIO1_4_FUNC_MASK |
+                    IOCON_PIO1_4_MODE_MASK);
+  IOCON_PIO1_4 |=  (IOCON_PIO1_4_FUNC_AD5 &
+                    IOCON_PIO1_4_ADMODE_ANALOG);
+  */
+
+  /* Set AD6 to analog input */
+  /* disabled for r0ket, used as chip select for RF
+  IOCON_PIO1_10 &= ~(IOCON_PIO1_10_ADMODE_MASK |
+                     IOCON_PIO1_10_FUNC_MASK |
+                     IOCON_PIO1_10_MODE_MASK);
+  IOCON_PIO1_10 |=  (IOCON_PIO1_10_FUNC_AD5 &
+                     IOCON_PIO1_10_ADMODE_ANALOG);
+  */
+
+  /* Set AD7 to analog input */
+  /* disabled for r0ket, LED output and light sensor. Use GetLight.
+  IOCON_PIO1_11 &= ~(IOCON_PIO1_11_ADMODE_MASK |
+                     IOCON_PIO1_11_FUNC_MASK |
+                     IOCON_PIO1_11_MODE_MASK);
+  IOCON_PIO1_11 |=  (IOCON_PIO1_11_FUNC_AD5 &
+                     IOCON_PIO1_11_ADMODE_ANALOG);
+  */
 
   /* Note that in SW mode only one channel can be selected at a time (AD0 in this case)
      To select multiple channels, ADC_AD0CR_BURST_HWSCANMODE must be used */

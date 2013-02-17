@@ -41,6 +41,10 @@
 
 #include "projectconfig.h"
 
+#define ADC_ERR               ((uint32_t) 0x00001800)
+#define ADC_ERR_OVERRUN       ((uint32_t) 0x00000800)
+#define ADC_ERR_NOT_AVAILABLE ((uint32_t) 0x00001000)
+
 extern uint8_t adcMutex;
 uint32_t   adcRead (uint8_t channelNum);
 void  adcInit (void);
