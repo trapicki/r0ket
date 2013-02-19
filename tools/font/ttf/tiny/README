@@ -1,0 +1,6 @@
+For r0ket this font should be generated with:
+./makefont.pl --bin --font tiny.ttf --size 5 --raw
+
+Compression seems to get problems with this font.
+
+Patrick Strasser 2013-02
